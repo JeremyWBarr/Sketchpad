@@ -22,9 +22,9 @@ $user       = 'jbarr';
 $password   = 'knowtheropes';
 	
 // See if there is an 'action' request.
-if(!isset($_POST['action'])){
-    errorMessage("No action given :(");
-}
+// if(!isset($_POST['action'])){
+//     errorMessage("No action given :(");
+// }
 
 // Open connection to database.
 try {
@@ -35,23 +35,31 @@ try {
     errorMessage('Connection failed: ' . $e->getMessage());
 }
 
-// Process the action; call the corresponding function to process it.
-$action = $_POST['action'];
-print($action);
 
-echo 'console.log('.$action.');';
+print_r($_POST);
+
+// echo 'console.log('.$action.');';
 
 $dbh->beginTransaction();
 
-$statement = $dbh->prepare('insert into sketchs(uid,title,data) values (:uid, :title, :data)');
+$statement = $dbh->prepare('insert into sketches(user,title,data) values (:user, :title, :data)');
 
 $statement->execute(array(
-	':uid' => 1,
-	':title' => "test",
-	':data' => "test"
+    ':user' => $_COOKIE["userLoggedIn"],
+	':title' => $_POST['title'],
+	':data' => $_POST['data']
 ));
 
 $dbh->commit();
+
+
+function errorMessage($message) {
+    $jsonarr = array('successful' => false, 'error' => $message);
+    printJSON($jsonarr);
+}
+function printJSON($arr) {
+    print json_encode($arr);
+}
 
 ?>
 </body>

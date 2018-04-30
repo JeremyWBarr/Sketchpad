@@ -10,7 +10,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-print("PHP loaded.");
+// print("PHP loaded.");
 if(array_key_exists("userLoggedIn", $_COOKIE)) {
 	print($_COOKIE["userLoggedIn"]);
 }

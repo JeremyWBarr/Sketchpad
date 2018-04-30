@@ -23,6 +23,26 @@ function logout() {
 	}
 }
 
+function parseURLParams(url) {
+    var queryStart = url.indexOf("?") + 1,
+        queryEnd   = url.indexOf("#") + 1 || url.length + 1,
+        query = url.slice(queryStart, queryEnd - 1),
+        pairs = query.replace(/\+/g, " ").split("&"),
+        parms = {}, i, n, v, nv;
+
+    if (query === url || query === "") return;
+
+    for (i = 0; i < pairs.length; i++) {
+        nv = pairs[i].split("=", 2);
+        n = decodeURIComponent(nv[0]);
+        v = decodeURIComponent(nv[1]);
+
+        if (!parms.hasOwnProperty(n)) parms[n] = [];
+        parms[n].push(nv.length === 2 ? v : null);
+    }
+    return parms;
+}
+
 const API = '../sketchpad.php';
 
 jQuery(document).ready(function(){
@@ -64,7 +84,7 @@ function removeEmptyParams(string){
 
 
 	<ul class="navbar">
-		<li><a href="#home" style="font-family: CrayonFont;">SKETCHPAD</a></li>
+		<li><a href="main.html" style="font-family: CrayonFont;">SKETCHPAD</a></li>
 		<li class="dropdown" style="float:right;">
     		<a href="javascript:void(0)" class="dropbtn">
     			<img src="https://cdn1.iconfinder.com/data/icons/mix-color-4/502/Untitled-1-512.png" style="width:20px; padding-right:5px;">
@@ -99,38 +119,36 @@ function removeEmptyParams(string){
 			var cs = [];
 		    var loc = document.getElementById("main");
 			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open( "GET", "http://digdug.cs.endicott.edu/~jbarr/sketchpad/main/load.php?id=-1", false ); // false for synchronous request
+			var user = parseURLParams(window.location.href)["user"][0];
+			xmlHttp.open( "GET", "http://digdug.cs.endicott.edu/~jbarr/sketchpad/main/load.php?id=-2&c="+user, false ); // false for synchronous request
 		    xmlHttp.send( null );
 
-		    var c = xmlHttp.responseText;
+		    var c = JSON.parse(xmlHttp.responseText);
+		    console.log(c);
 
-
-		    for(var i = parseInt(c); i > 0; i--) {
+		    for(var i = c.length-1; i >= 0; i--) {
 		    	// console.log(i);
 		    	var a = document.createElement("a");
 		    	var e = document.createElement("div");
-		    	a.href = "http://digdug.cs.endicott.edu/~jbarr/sketchpad/main/load.html?id="+i;
-		    	e.id = "can"+i;
-		    	e.className = "can";
+		    	a.href = "http://digdug.cs.endicott.edu/~jbarr/sketchpad/main/load.html?id="+c[i];
+		    	e.id = "can"+c[i];
 		    	e.style.width = "24%";
 		    	e.style.margin = "0.5%";
 		    	e.style.float = "left";
-		    	loc.appendChild(a)
+		    	loc.appendChild(a);
 		    	a.appendChild(e);
 		    }
-			var w = document.getElementById('can1').offsetWidth;
-			console.log(w);
+			var w = document.getElementById('can'+c[0]).offsetWidth;
+			// console.log(w);
 
-			for(var i = parseInt(c); i > 0; i--) {
+			for(var i = c.length-1; i >= 0; i--) {
 				cs[i] = function(p) {
-					var url = 'http://digdug.cs.endicott.edu/~jbarr/sketchpad/main/load.php?id='+i+'&c=data';
+					var url = 'http://digdug.cs.endicott.edu/~jbarr/sketchpad/main/load.php?id='+c[i]+'&c=data';
 					p.setup = function() {
-						var e = p.createCanvas(w-4,w-4);
+						var e = p.createCanvas(w,w);
 						e.style('display', 'block');
-						e.style('border', '2px solid #777');
+						e.style('border', '2px solid black');
 						e.style('border-radius', '8px');
-						// e.style('position', 'absolute');
-						// e.style('z-index', '0');
 						p.background(255);
 						p.httpGet(url, 'json', false, function(response){
 							for(i in response['data']) {
@@ -157,7 +175,7 @@ function removeEmptyParams(string){
 						});
 					}
 				}
-				new p5(cs[i], 'can'+i);
+				new p5(cs[i], 'can'+c[i]);
 			}
 		</script>
     </div>
